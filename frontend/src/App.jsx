@@ -1,49 +1,243 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react';
+import { CartProvider, useCart } from './context/CartContext';
+import TopBar from './components/layout/TopBar';
+import Navbar from './components/layout/Navbar';
+import CategoryBar from './components/layout/CategoryBar';
+import Footer from './components/layout/Footer';
+import HeroBanner from './components/home/HeroBanner';
+import CategoryGrid from './components/home/CategoryGrid';
+import ProductCard from './components/catalog/ProductCard';
+import FilterSidebar from './components/catalog/FilterSidebar';
+import QuickViewModal from './components/catalog/QuickViewModal';
+import InteriorEstimator from './components/estimator/InteriorEstimator';
+import CartDrawer from './components/cart/CartDrawer';
+import CheckoutModal from './components/cart/CheckoutModal';
+import { products } from './data/products';
+import { categories } from './data/categories';
+import { Sparkles, PackageSearch } from 'lucide-react';
 
-export default function App() {
-  const [count, setCount] = useState(0)
+function MainShopContent() {
+  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'estimator'
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedThickness, setSelectedThickness] = useState(null);
+  const [selectedScrewSize, setSelectedScrewSize] = useState(null);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [sortBy, setSortBy] = useState('featured');
+
+  const { toastMessage } = useCart();
+
+  const resetFilters = () => {
+    setSelectedCategory('all');
+    setSelectedThickness(null);
+    setSelectedScrewSize(null);
+    setInStockOnly(false);
+    setSearchQuery('');
+    setSortBy('featured');
+  };
+
+  // Filter & Sort Logic
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((product) => {
+        // Category filter
+        if (selectedCategory !== 'all' && product.category !== selectedCategory) {
+          return false;
+        }
+
+        // Search query
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchName = product.name.toLowerCase().includes(q);
+          const matchCat = product.category.toLowerCase().includes(q);
+          const matchDesc = product.description.toLowerCase().includes(q);
+          const matchVar = product.variants.some((v) =>
+            v.label.toLowerCase().includes(q)
+          );
+          if (!matchName && !matchCat && !matchDesc && !matchVar) return false;
+        }
+
+        // Thickness filter (for boards)
+        if (selectedThickness) {
+          const hasThickness = product.variants.some((v) =>
+            v.label.toLowerCase().includes(selectedThickness.toLowerCase())
+          );
+          if (!hasThickness) return false;
+        }
+
+        // Screw size filter
+        if (selectedScrewSize) {
+          const hasScrewSize = product.variants.some((v) =>
+            v.label.toLowerCase().includes(selectedScrewSize.toLowerCase())
+          );
+          if (!hasScrewSize) return false;
+        }
+
+        // In-stock
+        if (inStockOnly && !product.inStock) {
+          return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'rating') return b.rating - a.rating;
+        if (sortBy === 'price-asc') return a.variants[0].price - b.variants[0].price;
+        if (sortBy === 'price-desc') return b.variants[0].price - a.variants[0].price;
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
+        return 0; // featured default
+      });
+  }, [
+    selectedCategory,
+    searchQuery,
+    selectedThickness,
+    selectedScrewSize,
+    inStockOnly,
+    sortBy
+  ]);
+
+  const activeCategoryObj = categories.find((c) => c.id === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 selection:bg-indigo-500 selection:text-white">
-      <div className="w-full max-w-xl p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-          <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
-          Vite + React + Tailwind CSS
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
+      {/* 1. Global Announcement TopBar */}
+      <TopBar />
+
+      {/* 2. Main E-Commerce Header with Live Search & Cart */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        setSelectedCategory={setSelectedCategory}
+      />
+
+      {/* 3. Horizontal Category Navigation */}
+      <CategoryBar
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+      />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-amber-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 animate-in slide-in-from-bottom duration-200 text-xs sm:text-sm">
+          <Sparkles className="w-4 h-4 text-slate-950" />
+          <span>{toastMessage}</span>
         </div>
+      )}
 
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-          Frontend Setup Complete
-        </h1>
+      {/* 4. Main Page Container */}
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full">
+        {activeTab === 'estimator' ? (
+          /* Interior Work Material Estimator View */
+          <InteriorEstimator setActiveTab={setActiveTab} />
+        ) : (
+          /* Standard E-Commerce Catalog View */
+          <>
+            {/* Hero Carousel */}
+            <HeroBanner
+              setSelectedCategory={setSelectedCategory}
+              setActiveTab={setActiveTab}
+            />
 
-        <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-          React with Vite and Tailwind CSS is successfully configured inside the{' '}
-          <code className="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-300 font-mono text-xs">
-            frontend/
-          </code>{' '}
-          folder.
-        </p>
+            {/* Shop by Category Tiles */}
+            <CategoryGrid
+              setSelectedCategory={setSelectedCategory}
+              setActiveTab={setActiveTab}
+            />
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <button
-            onClick={() => setCount((c) => c + 1)}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 font-semibold text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
-          >
-            Count is {count}
-          </button>
-          <button
-            onClick={() => setCount(0)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-sm font-medium transition-all cursor-pointer"
-          >
-            Reset
-          </button>
-        </div>
+            {/* Catalog Grid Section with Filter Sidebar */}
+            <section id="catalog-section" className="mt-8">
+              <div className="flex flex-col lg:flex-row items-start gap-8">
+                {/* Left Filter Sidebar */}
+                <div className="w-full lg:w-64 shrink-0 lg:sticky lg:top-20">
+                  <FilterSidebar
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    selectedThickness={selectedThickness}
+                    setSelectedThickness={setSelectedThickness}
+                    selectedScrewSize={selectedScrewSize}
+                    setSelectedScrewSize={setSelectedScrewSize}
+                    inStockOnly={inStockOnly}
+                    setInStockOnly={setInStockOnly}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    resetFilters={resetFilters}
+                  />
+                </div>
 
-        <div className="border-t border-slate-800 pt-4 flex items-center justify-center gap-6 text-xs text-slate-500">
-          <span>⚡ Vite Fast HMR</span>
-          <span>🎨 Tailwind CSS</span>
-          <span>⚛️ React JSX</span>
-        </div>
-      </div>
+                {/* Right Product Grid */}
+                <div className="flex-1 w-full text-left">
+                  {/* Category Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-2 mb-6">
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                        {activeCategoryObj?.name || 'All Inventory'}
+                      </h2>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {activeCategoryObj?.description || 'Browse all products'}
+                      </p>
+                    </div>
+                    <div className="text-xs text-slate-400 font-medium">
+                      Showing{' '}
+                      <strong className="text-amber-400 font-bold">
+                        {filteredProducts.length}
+                      </strong>{' '}
+                      available items
+                    </div>
+                  </div>
+
+                  {/* Products Grid */}
+                  {filteredProducts.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-800 p-12 text-center space-y-3 bg-slate-900/40">
+                      <PackageSearch className="w-12 h-12 text-slate-600 mx-auto" />
+                      <h3 className="font-bold text-base text-white">
+                        No matching materials found
+                      </h3>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                        Try adjusting your filters, searching for a different thickness or screw size, or reset filters to browse all inventory.
+                      </p>
+                      <button
+                        onClick={resetFilters}
+                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold text-xs cursor-pointer"
+                      >
+                        Reset All Filters
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredProducts.map((prod) => (
+                        <ProductCard key={prod.id} product={prod} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+      </main>
+
+      {/* 5. Modals & Drawers */}
+      <CartDrawer />
+      <CheckoutModal />
+      <QuickViewModal />
+
+      {/* 6. Comprehensive E-Commerce Footer */}
+      <Footer
+        setSelectedCategory={setSelectedCategory}
+        setActiveTab={setActiveTab}
+      />
     </div>
-  )
+  );
+}
+
+export default function App() {
+  return (
+    <CartProvider>
+      <MainShopContent />
+    </CartProvider>
+  );
 }
