@@ -423,3 +423,4 @@ export const products = [
     image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
   }
 ];
+

@@ -93,3 +93,4 @@ export default function CategoryGrid({ setSelectedCategory, setActiveTab }) {
     </section>
   );
 }
+

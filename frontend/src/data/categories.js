@@ -56,3 +56,4 @@ export const categories = [
     subcategories: ['Wood Adhesives', 'Contact Adhesives', 'PVC Edge Bands', 'Silicone Sealants']
   }
 ];
+
