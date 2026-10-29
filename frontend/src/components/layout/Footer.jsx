@@ -4,26 +4,13 @@ import {
   Mail,
   MapPin,
   Clock,
-  Send,
   ShieldCheck,
   CreditCard,
   FileText,
   Truck
 } from 'lucide-react';
-import { useState } from 'react';
-import { useCart } from '../../context/CartContext';
 
 export default function Footer({ setSelectedCategory, setActiveTab }) {
-  const [email, setEmail] = useState('');
-  const { showToast } = useCart();
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!email) return;
-    showToast('Thank you! Wholesale price list sent to your email.');
-    setEmail('');
-  };
-
   const navigateCategory = (catId) => {
     setActiveTab('catalog');
     setSelectedCategory(catId);
@@ -93,29 +80,6 @@ export default function Footer({ setSelectedCategory, setActiveTab }) {
             <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
               Your trusted regional supplier for premium plywood, HDHMR green moisture-resistant panels, interior drywall & wood screws, soft-close hardware fittings, and synthetic wood adhesives.
             </p>
-
-            {/* Newsletter */}
-            <div className="pt-2">
-              <div className="text-xs font-semibold text-zinc-200 mb-2">
-                Join our Contractor Network for Weekly Price Updates:
-              </div>
-              <form onSubmit={handleSubscribe} className="flex gap-2 max-w-sm">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter email or phone..."
-                  className="flex-1 bg-zinc-800 dark:bg-[#161820] border border-zinc-700 dark:border-[#2E333F] rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Join</span>
-                </button>
-              </form>
-            </div>
           </div>
 
           {/* Column 2: Sheet Materials */}
