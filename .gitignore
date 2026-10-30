@@ -8,6 +8,20 @@ dist/
 dist-ssr/
 */dist-ssr/
 
+# .NET artifacts
+bin/
+*/bin/
+obj/
+*/obj/
+.local/
+*/.local/
+Library/
+*/Library/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
 # Environment files
 .env
 .env.*
@@ -22,4 +36,3 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-

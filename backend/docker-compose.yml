@@ -1,0 +1,50 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: hshop-mysql
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: hshop_db
+      MYSQL_USER: hshop_user
+      MYSQL_PASSWORD: hshop_password
+      MYSQL_ROOT_PASSWORD: root_secure_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secure_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    networks:
+      - hshop-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hshop-api
+    restart: unless-stopped
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=db;Port=3306;Database=hshop_db;User=hshop_user;Password=hshop_password;CharSet=utf8mb4;
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hshop-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  hshop-network:
+    driver: bridge
