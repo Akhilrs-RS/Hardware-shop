@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Search,
   ShoppingCart,
+  Heart,
   Layers,
   Menu,
   X,
@@ -11,6 +12,7 @@ import {
   Moon
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
 import { useTheme } from '../../context/ThemeContext';
 import { products } from '../../data/products';
 
@@ -22,6 +24,7 @@ export default function Navbar({
   setSelectedCategory
 }) {
   const { totalItems, subtotal, setIsCartOpen, setQuickViewProduct } = useCart();
+  const { totalWishlistItems, setIsWishlistOpen } = useWishlist();
   const { theme, toggleTheme } = useTheme();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -175,6 +178,20 @@ export default function Navbar({
               <span className="sm:hidden">Estimator</span>
             </button>
 
+            {/* Wishlist Trigger */}
+            <button
+              onClick={() => setIsWishlistOpen(true)}
+              className="p-2.5 rounded-xl bg-zinc-100 dark:bg-[#1A1D24] hover:bg-zinc-200 dark:hover:bg-[#222630] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-[#272A34] transition-all relative cursor-pointer group"
+              title="View Saved Items"
+            >
+              <Heart className={`w-4 h-4 ${totalWishlistItems > 0 ? 'text-rose-500 fill-rose-500' : 'text-zinc-600 dark:text-zinc-400'} group-hover:scale-110 transition-transform`} />
+              {totalWishlistItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  {totalWishlistItems}
+                </span>
+              )}
+            </button>
+
             {/* Cart / BOM Trigger */}
             <button
               onClick={() => setIsCartOpen(true)}
@@ -284,6 +301,23 @@ export default function Navbar({
             >
               <Sparkles className="w-4 h-4" />
               Interior Work Material Estimator
+            </button>
+            <button
+              onClick={() => {
+                setIsWishlistOpen(true);
+                setMobileMenuOpen(false);
+              }}
+              className="px-3 py-2 text-left text-sm font-semibold text-rose-500 hover:bg-zinc-100 dark:hover:bg-[#222630] rounded-lg flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <Heart className="w-4 h-4 fill-rose-500" />
+                Saved Wishlist Items
+              </span>
+              {totalWishlistItems > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-xs bg-rose-500 text-white font-bold">
+                  {totalWishlistItems}
+                </span>
+              )}
             </button>
           </div>
         )}

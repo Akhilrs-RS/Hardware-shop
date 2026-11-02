@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { ThemeProvider } from './context/ThemeContext';
 import TopBar from './components/layout/TopBar';
 import Navbar from './components/layout/Navbar';
@@ -7,9 +8,14 @@ import CategoryBar from './components/layout/CategoryBar';
 import Footer from './components/layout/Footer';
 import HeroBanner from './components/home/HeroBanner';
 import CategoryGrid from './components/home/CategoryGrid';
+import ProjectShowcase from './components/home/ProjectShowcase';
+import TestimonialsSection from './components/home/TestimonialsSection';
+import FaqSection from './components/home/FaqSection';
 import ProductCard from './components/catalog/ProductCard';
 import FilterSidebar from './components/catalog/FilterSidebar';
+import CollectionTabs from './components/catalog/CollectionTabs';
 import QuickViewModal from './components/catalog/QuickViewModal';
+import WishlistDrawer from './components/wishlist/WishlistDrawer';
 import InteriorEstimator from './components/estimator/InteriorEstimator';
 import CartDrawer from './components/cart/CartDrawer';
 import CheckoutModal from './components/cart/CheckoutModal';
@@ -20,6 +26,7 @@ import { Sparkles, PackageSearch } from 'lucide-react';
 function MainShopContent() {
   const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'estimator'
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeFilterTab, setActiveFilterTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedThickness, setSelectedThickness] = useState(null);
   const [selectedScrewSize, setSelectedScrewSize] = useState(null);
@@ -30,6 +37,7 @@ function MainShopContent() {
 
   const resetFilters = () => {
     setSelectedCategory('all');
+    setActiveFilterTab('all');
     setSelectedThickness(null);
     setSelectedScrewSize(null);
     setInStockOnly(false);
@@ -44,6 +52,20 @@ function MainShopContent() {
         // Category filter
         if (selectedCategory !== 'all' && product.category !== selectedCategory) {
           return false;
+        }
+
+        // Curated Collection Tab filter
+        if (activeFilterTab === 'best-sellers') {
+          const isBestSeller = product.badge?.includes('Best') || product.badge?.includes('Top') || product.reviewsCount >= 100;
+          if (!isBestSeller) return false;
+        } else if (activeFilterTab === 'bulk-packs') {
+          const isBulk = product.category === 'screws-fasteners' || product.defaultUnit.includes('box') || product.defaultUnit.includes('roll') || product.badge?.includes('Bulk');
+          if (!isBulk) return false;
+        } else if (activeFilterTab === 'top-rated') {
+          if (product.rating < 4.85) return false;
+        } else if (activeFilterTab === 'waterproof') {
+          const isWaterproof = product.badge?.includes('Marine') || product.badge?.includes('Rust') || product.name.includes('Marine') || product.id === 'adh-01';
+          if (!isWaterproof) return false;
         }
 
         // Search query
@@ -90,6 +112,7 @@ function MainShopContent() {
       });
   }, [
     selectedCategory,
+    activeFilterTab,
     searchQuery,
     selectedThickness,
     selectedScrewSize,
@@ -104,7 +127,7 @@ function MainShopContent() {
       {/* 1. Global Announcement TopBar */}
       <TopBar />
 
-      {/* 2. Main E-Commerce Header with Live Search, Theme Switcher & Cart */}
+      {/* 2. Main E-Commerce Header with Live Search, Theme Switcher, Wishlist & Cart */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -137,20 +160,26 @@ function MainShopContent() {
         ) : (
           /* Standard E-Commerce Catalog View */
           <>
-            {/* Hero Carousel */}
+            {/* Upgraded Split Hero Banner & Quick Deal Cards */}
             <HeroBanner
               setSelectedCategory={setSelectedCategory}
               setActiveTab={setActiveTab}
             />
 
-            {/* Shop by Category Tiles */}
+            {/* Shop by Category Visual Tiles */}
             <CategoryGrid
               setSelectedCategory={setSelectedCategory}
               setActiveTab={setActiveTab}
             />
 
+            {/* Shop by Interior Project Showcase */}
+            <ProjectShowcase
+              setActiveTab={setActiveTab}
+              setSelectedCategory={setSelectedCategory}
+            />
+
             {/* Catalog Grid Section with Filter Sidebar */}
-            <section id="catalog-section" className="mt-8">
+            <section id="catalog-section" className="mt-8 mb-16">
               <div className="flex flex-col lg:flex-row items-start gap-8">
                 {/* Left Filter Sidebar */}
                 <div className="w-full lg:w-64 shrink-0 lg:sticky lg:top-20">
@@ -172,13 +201,13 @@ function MainShopContent() {
                 {/* Right Product Grid */}
                 <div className="flex-1 w-full text-left">
                   {/* Category Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-zinc-200 dark:border-[#272A34] gap-2 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-zinc-200 dark:border-[#272A34] gap-2 mb-4">
                     <div>
                       <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
                         {activeCategoryObj?.name || 'All Inventory'}
                       </h2>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        {activeCategoryObj?.description || 'Browse all products'}
+                        {activeCategoryObj?.description || 'Browse all materials, screws, and fittings'}
                       </p>
                     </div>
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
@@ -190,9 +219,15 @@ function MainShopContent() {
                     </div>
                   </div>
 
+                  {/* Curated Collection Tabs */}
+                  <CollectionTabs
+                    activeFilterTab={activeFilterTab}
+                    setActiveFilterTab={setActiveFilterTab}
+                  />
+
                   {/* Products Grid */}
                   {filteredProducts.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 p-12 text-center space-y-3 bg-white dark:bg-[#1A1D24]/40">
+                    <div className="rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-800 p-12 text-center space-y-3 bg-white dark:bg-[#1A1D24]/40">
                       <PackageSearch className="w-12 h-12 text-zinc-400 dark:text-zinc-600 mx-auto" />
                       <h3 className="font-bold text-base text-zinc-900 dark:text-white">
                         No matching materials found
@@ -217,12 +252,19 @@ function MainShopContent() {
                 </div>
               </div>
             </section>
+
+            {/* Verified Contractor Reviews Section */}
+            <TestimonialsSection />
+
+            {/* Hardware Buying Guide & FAQ Section */}
+            <FaqSection />
           </>
         )}
       </main>
 
       {/* 5. Modals & Drawers */}
       <CartDrawer />
+      <WishlistDrawer />
       <CheckoutModal />
       <QuickViewModal />
 
@@ -239,7 +281,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <CartProvider>
-        <MainShopContent />
+        <WishlistProvider>
+          <MainShopContent />
+        </WishlistProvider>
       </CartProvider>
     </ThemeProvider>
   );

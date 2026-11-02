@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { Star, ShoppingCart, Eye, Check, Plus, Minus } from 'lucide-react';
+import { Star, ShoppingCart, Eye, Check, Plus, Minus, Heart, Truck } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
 
 export default function ProductCard({ product }) {
   const { addToCart, setQuickViewProduct } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+
+  const isFavorited = isInWishlist(product.id);
 
   const handleAddToCart = () => {
     addToCart(product, selectedVariant, qty);
@@ -23,7 +27,7 @@ export default function ProductCard({ product }) {
     : 0;
 
   return (
-    <div className="group rounded-2xl bg-white dark:bg-[#1A1D24] border border-zinc-200 dark:border-[#272A34] hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-lg transition-all flex flex-col justify-between overflow-hidden shadow-sm">
+    <div className="group rounded-3xl bg-white dark:bg-[#1A1D24] border border-zinc-200 dark:border-[#272A34] hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm">
       {/* 1. Image & Badges */}
       <div className="relative aspect-[4/3] bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
         <img
@@ -34,31 +38,44 @@ export default function ProductCard({ product }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
 
         {/* Top Badges */}
-        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5">
+        <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
           {product.badge && (
             <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-zinc-900/90 text-white dark:bg-amber-500 dark:text-zinc-950 shadow-sm">
               {product.badge}
             </span>
           )}
           {discountPercent > 0 && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600/90 text-white shadow-sm">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600/95 text-white shadow-sm">
               Save {discountPercent}%
             </span>
           )}
         </div>
 
+        {/* Top Right: Wishlist Heart Toggle */}
+        <button
+          onClick={() => toggleWishlist(product)}
+          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all cursor-pointer ${
+            isFavorited
+              ? 'bg-rose-500 text-white shadow-md scale-105'
+              : 'bg-white/80 dark:bg-zinc-900/80 text-zinc-600 dark:text-zinc-300 hover:text-rose-500 hover:bg-white dark:hover:bg-zinc-800'
+          }`}
+          title={isFavorited ? 'Remove from Wishlist' : 'Save to Wishlist'}
+        >
+          <Heart className={`w-3.5 h-3.5 ${isFavorited ? 'fill-white' : ''}`} />
+        </button>
+
         {/* Quick View Specs Button */}
         <button
           onClick={() => setQuickViewProduct(product)}
-          className="absolute right-2.5 bottom-2.5 p-2 rounded-xl bg-white/90 hover:bg-zinc-900 hover:text-white dark:bg-[#1A1D24]/90 dark:hover:bg-amber-500 dark:text-zinc-200 dark:hover:text-zinc-950 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold shadow-md transition-all flex items-center gap-1 cursor-pointer text-zinc-800"
+          className="absolute right-3 bottom-3 py-1.5 px-3 rounded-xl bg-white/95 hover:bg-zinc-900 hover:text-white dark:bg-[#1A1D24]/90 dark:hover:bg-amber-500 dark:text-zinc-200 dark:hover:text-zinc-950 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold shadow-md transition-all flex items-center gap-1.5 cursor-pointer text-zinc-800"
         >
           <Eye className="w-3.5 h-3.5" />
-          <span className="text-[11px] hidden sm:inline">Specs</span>
+          <span className="text-[11px]">Specs</span>
         </button>
       </div>
 
       {/* 2. Body & Information */}
-      <div className="p-4 flex-1 flex flex-col justify-between text-left">
+      <div className="p-5 flex-1 flex flex-col justify-between text-left">
         <div>
           {/* Brand & Rating */}
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">
@@ -75,13 +92,21 @@ export default function ProductCard({ product }) {
           {/* Product Title */}
           <h3
             onClick={() => setQuickViewProduct(product)}
-            className="font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-amber-700 dark:hover:text-amber-400 transition-colors line-clamp-2 cursor-pointer leading-snug mb-2.5"
+            className="font-bold text-sm text-zinc-900 dark:text-zinc-100 hover:text-amber-700 dark:hover:text-amber-400 transition-colors line-clamp-2 cursor-pointer leading-snug mb-2"
           >
             {product.name}
           </h3>
 
+          {/* Sheet Size or Package note */}
+          {product.sheetSize && (
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mb-3 flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Standard Size: <strong>{product.sheetSize}</strong></span>
+            </div>
+          )}
+
           {/* Interactive Variant Pills */}
-          <div className="mb-3">
+          <div className="mb-4">
             <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mb-1.5 flex items-center justify-between">
               <span>Select Option:</span>
               <span className="text-zinc-800 dark:text-zinc-200 font-bold">{selectedVariant.label}</span>
@@ -93,9 +118,9 @@ export default function ProductCard({ product }) {
                   <button
                     key={v.id}
                     onClick={() => setSelectedVariant(v)}
-                    className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-zinc-900 text-white dark:bg-amber-500 dark:text-zinc-950 shadow-sm'
+                        ? 'bg-zinc-900 text-white dark:bg-amber-500 dark:text-zinc-950 shadow-sm font-bold'
                         : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-[#222630] dark:text-zinc-300 dark:hover:bg-[#2A303D] border border-zinc-200 dark:border-[#2E333F]'
                     }`}
                   >
@@ -112,7 +137,7 @@ export default function ProductCard({ product }) {
           <div className="flex items-baseline justify-between mb-3">
             <div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-black text-zinc-900 dark:text-white">
+                <span className="text-xl font-black text-zinc-900 dark:text-white">
                   ₹{selectedVariant.price.toLocaleString()}
                 </span>
                 {selectedVariant.originalPrice && (
@@ -127,7 +152,7 @@ export default function ProductCard({ product }) {
             </div>
 
             {/* Quantity Stepper */}
-            <div className="flex items-center bg-zinc-100 dark:bg-[#222630] rounded-lg border border-zinc-200 dark:border-[#2E333F]">
+            <div className="flex items-center bg-zinc-100 dark:bg-[#222630] rounded-xl border border-zinc-200 dark:border-[#2E333F] p-0.5">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="p-1 hover:text-zinc-900 text-zinc-500 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
@@ -144,6 +169,12 @@ export default function ProductCard({ product }) {
                 <Plus className="w-3 h-3" />
               </button>
             </div>
+          </div>
+
+          {/* Site Dispatch Notice */}
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 mb-3 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20">
+            <Truck className="w-3 h-3 shrink-0" />
+            <span>In Stock • Ready for Flatbed Site Delivery</span>
           </div>
 
           {/* Add to Cart Button */}
