@@ -50,3 +50,4 @@ public class CategoriesController : ControllerBase
         return Ok(dtos);
     }
 }
+

@@ -38,3 +38,4 @@ public class CategoryDto
     public string? Description { get; set; }
     public List<string> Subcategories { get; set; } = new();
 }
+

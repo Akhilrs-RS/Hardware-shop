@@ -81,3 +81,4 @@ dotnet run
 - `POST /api/orders` - Submit job-site checkout order or WhatsApp BOM quotation.
 - `GET /api/orders/{id}` - Retrieve order by reference ID (e.g. `/api/orders/HSHOP-123456`).
 - `GET /api/orders` - List recent orders.
+

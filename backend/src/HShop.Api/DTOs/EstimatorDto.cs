@@ -28,3 +28,4 @@ public class EstimatorResultDto
     public decimal EstimatedTotal { get; set; }
     public List<EstimatorItemDto> Items { get; set; } = new();
 }
+

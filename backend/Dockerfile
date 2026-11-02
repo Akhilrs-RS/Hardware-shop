@@ -27,3 +27,4 @@ COPY --from=build /app/publish .
 
 # Run application
 ENTRYPOINT ["dotnet", "HShop.Api.dll"]
+

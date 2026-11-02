@@ -12,3 +12,4 @@ public class ProductVariant
 
     public Product? Product { get; set; }
 }
+

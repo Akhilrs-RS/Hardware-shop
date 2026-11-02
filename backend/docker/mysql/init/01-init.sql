@@ -5,3 +5,4 @@ USE `hshop_db`;
 -- Grant permissions to hshop_user
 GRANT ALL PRIVILEGES ON `hshop_db`.* TO 'hshop_user'@'%';
 FLUSH PRIVILEGES;
+

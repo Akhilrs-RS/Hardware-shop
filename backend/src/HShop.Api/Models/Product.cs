@@ -19,3 +19,4 @@ public class Product
     public Category? Category { get; set; }
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
 }
+
