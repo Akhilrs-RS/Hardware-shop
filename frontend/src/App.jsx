@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import TopBar from './components/layout/TopBar';
 import Navbar from './components/layout/Navbar';
 import CategoryBar from './components/layout/CategoryBar';
+import MobileBottomNav from './components/layout/MobileBottomNav';
 import Footer from './components/layout/Footer';
 import HeroBanner from './components/home/HeroBanner';
 import CategoryGrid from './components/home/CategoryGrid';
@@ -44,6 +45,14 @@ function MainShopContent() {
     setSearchQuery('');
     setSortBy('featured');
   };
+
+  const hasActiveFilters =
+    selectedCategory !== 'all' ||
+    selectedThickness !== null ||
+    selectedScrewSize !== null ||
+    inStockOnly ||
+    activeFilterTab !== 'all' ||
+    searchQuery.trim() !== '';
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
@@ -123,7 +132,7 @@ function MainShopContent() {
   const activeCategoryObj = categories.find((c) => c.id === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] dark:bg-[#121316] text-zinc-900 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-500 selection:text-zinc-950 transition-colors">
+    <div className="min-h-screen pb-16 md:pb-0 bg-[#F8F9FA] dark:bg-[#121316] text-zinc-900 dark:text-zinc-100 flex flex-col font-sans selection:bg-amber-500 selection:text-zinc-950 transition-colors">
       {/* 1. Global Announcement TopBar */}
       <TopBar />
 
@@ -146,7 +155,7 @@ function MainShopContent() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white dark:bg-amber-500 dark:text-zinc-950 font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 animate-in slide-in-from-bottom duration-200 text-xs sm:text-sm">
+        <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 bg-zinc-900 text-white dark:bg-amber-500 dark:text-zinc-950 font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 animate-in slide-in-from-bottom duration-200 text-xs sm:text-sm">
           <Sparkles className="w-4 h-4 text-amber-400 dark:text-zinc-950" />
           <span>{toastMessage}</span>
         </div>
@@ -160,7 +169,7 @@ function MainShopContent() {
         ) : (
           /* Standard E-Commerce Catalog View */
           <>
-            {/* Upgraded Split Hero Banner & Quick Deal Cards */}
+            {/* Streamlined Hero Banner & Instant Material Showcase */}
             <HeroBanner
               setSelectedCategory={setSelectedCategory}
               setActiveTab={setActiveTab}
@@ -179,10 +188,10 @@ function MainShopContent() {
             />
 
             {/* Catalog Grid Section with Filter Sidebar */}
-            <section id="catalog-section" className="mt-8 mb-16">
+            <section id="catalog-section" className="mt-8 mb-16 scroll-mt-24">
               <div className="flex flex-col lg:flex-row items-start gap-8">
                 {/* Left Filter Sidebar */}
-                <div className="w-full lg:w-64 shrink-0 lg:sticky lg:top-20">
+                <div className="w-full lg:w-64 shrink-0 lg:sticky lg:top-24">
                   <FilterSidebar
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
@@ -225,6 +234,55 @@ function MainShopContent() {
                     setActiveFilterTab={setActiveFilterTab}
                   />
 
+                  {/* Active Filter Chips with 1-click removal */}
+                  {hasActiveFilters && (
+                    <div className="flex flex-wrap items-center gap-1.5 mb-4 text-left">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mr-1">Applied:</span>
+                      {selectedCategory !== 'all' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 font-medium">
+                          Category: {activeCategoryObj?.name}
+                          <button onClick={() => setSelectedCategory('all')} className="ml-1 text-amber-700 dark:text-amber-400 hover:text-black dark:hover:text-white cursor-pointer font-bold">✕</button>
+                        </span>
+                      )}
+                      {activeFilterTab !== 'all' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 font-medium">
+                          Collection: {activeFilterTab}
+                          <button onClick={() => setActiveFilterTab('all')} className="ml-1 text-amber-700 dark:text-amber-400 hover:text-black dark:hover:text-white cursor-pointer font-bold">✕</button>
+                        </span>
+                      )}
+                      {selectedThickness && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 font-medium">
+                          Thickness: {selectedThickness}
+                          <button onClick={() => setSelectedThickness(null)} className="ml-1 text-amber-700 dark:text-amber-400 hover:text-black dark:hover:text-white cursor-pointer font-bold">✕</button>
+                        </span>
+                      )}
+                      {selectedScrewSize && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-amber-50 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 font-medium">
+                          Size: {selectedScrewSize}
+                          <button onClick={() => setSelectedScrewSize(null)} className="ml-1 text-amber-700 dark:text-amber-400 hover:text-black dark:hover:text-white cursor-pointer font-bold">✕</button>
+                        </span>
+                      )}
+                      {inStockOnly && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 font-medium">
+                          In-Stock
+                          <button onClick={() => setInStockOnly(false)} className="ml-1 text-emerald-700 dark:text-emerald-400 hover:text-black dark:hover:text-white cursor-pointer font-bold">✕</button>
+                        </span>
+                      )}
+                      {searchQuery.trim() !== '' && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 font-medium">
+                          &ldquo;{searchQuery}&rdquo;
+                          <button onClick={() => setSearchQuery('')} className="ml-1 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white cursor-pointer font-bold">✕</button>
+                        </span>
+                      )}
+                      <button
+                        onClick={resetFilters}
+                        className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-semibold ml-1 cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  )}
+
                   {/* Products Grid */}
                   {filteredProducts.length === 0 ? (
                     <div className="rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-800 p-12 text-center space-y-3 bg-white dark:bg-[#1A1D24]/40">
@@ -243,7 +301,7 @@ function MainShopContent() {
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       {filteredProducts.map((prod) => (
                         <ProductCard key={prod.id} product={prod} />
                       ))}
@@ -268,7 +326,10 @@ function MainShopContent() {
       <CheckoutModal />
       <QuickViewModal />
 
-      {/* 6. Comprehensive E-Commerce Footer */}
+      {/* 6. Mobile Bottom Navigation */}
+      <MobileBottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* 7. Comprehensive E-Commerce Footer */}
       <Footer
         setSelectedCategory={setSelectedCategory}
         setActiveTab={setActiveTab}
